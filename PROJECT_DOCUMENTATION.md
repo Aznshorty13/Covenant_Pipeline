@@ -602,6 +602,7 @@ Installed as `covenant-pipeline` via `pyproject.toml` → `covenant_pipeline.cli
 | `glossary` | `resolved_definitions.json` |
 | `compiled` | `final_compiled_payload.json` |
 | `audited` | `final_compiled_payload_audited.json` |
+| `report_html` | `covenant_audit_report.html` |
 
 ### **Final Payload Structure (`final_compiled_payload_audited.json`)**
 
@@ -699,6 +700,21 @@ covenant-pipeline run --pdf agreement.pdf --serve-ui
 
 * Backend: `uvicorn main:app` on `http://127.0.0.1:8000`
 * Frontend: `npm run dev` on `http://localhost:5173`
+
+## **HTML Audit Report** {#html-audit-report}
+
+**Modules:** `covenant_pipeline/report/html_report.py`, `covenant_pipeline/report/formatters.py`, `covenant_pipeline/report/pdf_images.py`, `covenant_pipeline/report/summary.py`
+
+After a full pipeline run (through `validate`), the pipeline writes a self-contained offline HTML report that mirrors the Covenant Viewer layout: pipeline summary, covenant sidebar navigation, embedded PDF page images, extracted math, and dynamic glossary.
+
+* **Output:** `{output_dir}/covenant_audit_report.html`
+* **Default:** Generated automatically on `covenant-pipeline run` (when LLM stages run)
+* **Skip:** `covenant-pipeline run --no-html-report`
+* **Regenerate:** `covenant-pipeline report --pdf agreement.pdf --output-dir out/`
+
+**File size:** The report embeds JPEG page images (700px width) for every covenant’s receipt page range. Expect multi‑MB to tens of MB depending on document length and covenant count. The CLI logs the final file size after write.
+
+**Shared logic:** `build_pipeline_summary()` in `covenant_pipeline/report/summary.py` is used by both the HTML report and the viewer API (`GET /api/pipeline-summary`).
 
 # **Future Roadmap (Not Yet Implemented)** {#future-roadmap-not-yet-implemented}
 

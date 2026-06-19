@@ -15,7 +15,13 @@ from covenant_pipeline.phases.validation import run_validation
 from covenant_pipeline.viewer import launch_dev
 
 
-def run_full_pipeline(paths: PipelinePaths, *, skip_llm: bool = False, serve_ui: bool = False) -> Path:
+def run_full_pipeline(
+    paths: PipelinePaths,
+    *,
+    skip_llm: bool = False,
+    serve_ui: bool = False,
+    html_report: bool = True,
+) -> Path:
     """Run all pipeline stages in order; return path to final audited JSON."""
     paths.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -40,6 +46,12 @@ def run_full_pipeline(paths: PipelinePaths, *, skip_llm: bool = False, serve_ui:
 
         print("\n=== Stage: validate ===")
         run_validation(paths)
+
+        if html_report:
+            print("\n=== Stage: report ===")
+            from covenant_pipeline.report.html_report import generate_html_report
+
+            generate_html_report(paths)
     else:
         print("\nSkipping LLM stages (extract, compile, audit, validate) due to --skip-llm.")
 

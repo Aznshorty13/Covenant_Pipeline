@@ -8,6 +8,7 @@ from pathlib import Path
 
 from covenant_pipeline.config import DEFAULT_OUTPUT_DIR, PipelinePaths
 from covenant_pipeline.orchestrator import run_full_pipeline, run_stage
+from covenant_pipeline.report.html_report import generate_html_report
 from covenant_pipeline.viewer import launch_dev
 
 STAGES = ("chunk", "route", "extract", "glossary", "compile", "audit", "validate")
@@ -72,6 +73,21 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Launch the Covenant Viewer after the pipeline completes",
     )
+    run_parser.add_argument(
+        "--no-html-report",
+        action="store_true",
+        help="Skip generating covenant_audit_report.html after validation",
+    )
+
+    report_parser = subparsers.add_parser(
+        "report",
+        help="Generate HTML audit report from existing pipeline output",
+    )
+    _add_common_args(report_parser)
+    report_parser.add_argument(
+        "--pdf",
+        help="Path to source PDF (default: output-dir/Credit_Agreement_Hallador.pdf)",
+    )
 
     serve_parser = subparsers.add_parser("serve", help="Launch viewer for existing pipeline output")
     _add_common_args(serve_parser)
@@ -121,7 +137,10 @@ def main(argv: list[str] | None = None) -> int:
                 paths,
                 skip_llm=args.skip_llm,
                 serve_ui=getattr(args, "serve_ui", False),
+                html_report=not getattr(args, "no_html_report", False),
             )
+        elif args.command == "report":
+            result = generate_html_report(paths)
         elif args.command == "serve":
             launch_dev(paths, open_browser=not args.no_browser)
             result = paths.audited

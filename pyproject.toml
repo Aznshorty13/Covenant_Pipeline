@@ -24,3 +24,6 @@ covenant-pipeline = "covenant_pipeline.cli:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["covenant_pipeline*"]
+
+[tool.setuptools.package-data]
+covenant_pipeline = ["report/template/*.html"]

@@ -38,6 +38,7 @@ class PipelinePaths:
     glossary_json: str = "resolved_definitions.json"
     compiled_json: str = "final_compiled_payload.json"
     audited_json: str = "final_compiled_payload_audited.json"
+    report_html_filename: str = "covenant_audit_report.html"
 
     def __post_init__(self) -> None:
         self.output_dir = Path(self.output_dir).resolve()
@@ -84,6 +85,10 @@ class PipelinePaths:
     @property
     def audited(self) -> Path:
         return self.path(self.audited_json)
+
+    @property
+    def report_html(self) -> Path:
+        return self.path(self.report_html_filename)
 
 
 def viewer_env(paths: PipelinePaths) -> dict[str, str]:

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Covenant Audit Report</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .app { display: flex; flex-direction: column; height: 100vh; }
+    .summary-bar { border-bottom: 1px solid #334155; background: #1e293b; flex-shrink: 0; }
+    .summary-toggle {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: 0.5rem 1rem; background: transparent; border: none; color: inherit; cursor: pointer;
+    }
+    .summary-toggle:hover { background: rgba(51, 65, 85, 0.5); }
+    .summary-title { font-size: 0.875rem; font-weight: 700; color: #60a5fa; letter-spacing: 0.05em; }
+    .summary-body { padding: 0 1rem 0.75rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; font-size: 0.75rem; }
+    .summary-card { background: rgba(15, 23, 42, 0.6); padding: 0.5rem; border-radius: 0.25rem; border: 1px solid #334155; }
+    .summary-label { color: #64748b; text-transform: uppercase; }
+    .summary-value { font-weight: 600; color: #e2e8f0; }
+    .pass { color: #4ade80; }
+    .fail { color: #facc15; }
+    .summary-failures { grid-column: span 4; border-color: rgba(234, 179, 8, 0.5); }
+    .summary-failures ul { margin: 0.25rem 0 0; padding-left: 1.25rem; color: #cbd5e1; }
+    .main { display: flex; flex: 1; overflow: hidden; }
+    .col-queue {
+      width: 25%; border-right: 1px solid #334155; background: #1e293b;
+      padding: 1rem; display: flex; flex-direction: column;
+    }
+    .col-pdf { width: 50%; display: flex; flex-direction: column; padding: 1rem; background: #0f172a; }
+    .col-audit {
+      width: 25%; border-left: 1px solid #334155; background: #1e293b;
+      display: flex; flex-direction: column;
+    }
+    h2 { font-size: 1.125rem; font-weight: 700; color: #60a5fa; letter-spacing: 0.05em; margin: 0 0 1rem; }
+    .queue-meta { font-size: 0.875rem; color: #94a3b8; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #334155; }
+    .queue-list { flex: 1; overflow-y: auto; padding-right: 0.5rem; }
+    .queue-item {
+      width: 100%; text-align: left; padding: 0.75rem; margin-bottom: 0.5rem;
+      border-radius: 0.25rem; border: 1px solid #334155; background: #1e293b; color: #cbd5e1;
+      cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    }
+    .queue-item:hover { background: #334155; border-color: #64748b; }
+    .queue-item.active { background: rgba(30, 58, 138, 0.4); border-color: #3b82f6; color: #dbeafe; }
+    .queue-item-title { font-size: 0.875rem; font-weight: 600; display: flex; justify-content: space-between; gap: 0.5rem; }
+    .badge { font-size: 0.75rem; padding: 0.125rem 0.5rem; border-radius: 0.25rem; flex-shrink: 0; }
+    .badge-verified { color: #4ade80; background: rgba(20, 83, 45, 0.3); }
+    .badge-audit { color: #facc15; background: rgba(113, 63, 18, 0.3); }
+    .badge-flagged { color: #f87171; background: rgba(127, 29, 29, 0.3); }
+    .queue-item-meta { font-size: 0.75rem; margin-top: 0.5rem; color: #94a3b8; }
+    .queue-item-meta .section { color: #64748b; }
+    .pdf-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .page-badge {
+      font-size: 0.875rem; color: #64748b; font-weight: 400;
+      border: 1px solid #334155; padding: 0.25rem 0.5rem; border-radius: 0.25rem; background: #1e293b;
+    }
+    .pdf-scroll {
+      flex: 1; border: 1px solid #334155; border-radius: 0.25rem;
+      background: rgba(30, 41, 59, 0.3); overflow-y: auto;
+      display: flex; flex-direction: column; align-items: center; padding: 1rem; gap: 1.5rem;
+    }
+    .pdf-scroll img {
+      max-width: 700px; width: 100%; border-radius: 0.25rem;
+      border: 1px solid #334155; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .audit-panel { padding: 1rem; height: 60%; border-bottom: 1px solid #334155; display: flex; flex-direction: column; overflow: hidden; }
+    .audit-scroll { flex: 1; overflow-y: auto; padding-right: 0.5rem; }
+    .glossary-panel { padding: 1rem; flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+    #glossaryContent {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0;
+    }
+    .audit-card {
+      margin-bottom: 1rem; background: #0f172a; border: 1px solid #334155;
+      padding: 0.75rem; border-radius: 0.25rem;
+    }
+    .audit-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; }
+    .audit-label { color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+    .audit-note { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
+    .audit-warning { font-size: 0.75rem; color: #facc15; border-top: 1px solid #334155; padding-top: 0.5rem; margin-top: 0.5rem; }
+    .audit-error { font-size: 0.75rem; color: #f87171; border-top: 1px solid #334155; padding-top: 0.5rem; margin-top: 0.5rem; }
+    .audit-warning ul, .audit-error ul { margin: 0.25rem 0 0; padding-left: 1rem; }
+    .placeholder { font-size: 0.875rem; color: #94a3b8; font-style: italic; }
+    .glossary-select {
+      width: 100%; background: #0f172a; border: 1px solid #475569; color: #e2e8f0;
+      font-size: 0.875rem; border-radius: 0.25rem; padding: 0.5rem; margin-bottom: 1rem;
+    }
+    .glossary-text {
+      flex: 1; min-height: 0; overflow-y: auto; background: rgba(15, 23, 42, 0.5);
+      padding: 0.75rem; border-radius: 0.25rem; border: 1px solid rgba(51, 65, 85, 0.5);
+      font-size: 0.875rem; line-height: 1.6; color: #cbd5e1;
+    }
+    .value-object { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; }
+    .value-block { background: rgba(30, 41, 59, 0.8); padding: 0.75rem; border-radius: 0.25rem; border: 1px solid rgba(51, 65, 85, 0.5); }
+    .value-key { font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .value-body { margin-top: 0.25rem; }
+    .value-list { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+    .value-scalar { color: #e2e8f0; }
+    .ref-tag { color: #60a5fa; font-weight: 600; }
+    .hidden { display: none !important; }
+    @media (max-width: 1024px) {
+      .main { flex-direction: column; overflow-y: auto; }
+      .col-queue, .col-pdf, .col-audit { width: 100%; border: none; min-height: 320px; }
+      body { overflow: auto; height: auto; }
+      .app { height: auto; min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="summary-bar">
+      <button type="button" class="summary-toggle" id="summaryToggle">
+        <span class="summary-title">PIPELINE RUN SUMMARY</span>
+        <span id="summaryToggleLabel">Hide</span>
+      </button>
+      <div class="summary-body" id="summaryBody"></div>
+    </div>
+
+    <div class="main">
+      <div class="col-queue">
+        <h2>PHASE 1 QUEUE</h2>
+        <div class="queue-meta" id="queueMeta"></div>
+        <div class="queue-list" id="queueList"></div>
+      </div>
+
+      <div class="col-pdf">
+        <div class="pdf-header">
+          <h2>SOURCE DOCUMENT PROVENANCE</h2>
+          <span class="page-badge hidden" id="pageBadge"></span>
+        </div>
+        <div class="pdf-scroll" id="pdfScroll">
+          <span class="placeholder">Select an item from the queue to view source pages.</span>
+        </div>
+      </div>
+
+      <div class="col-audit">
+        <div class="audit-panel">
+          <h2>EXTRACTED MATH</h2>
+          <div class="audit-scroll" id="auditScroll">
+            <span class="placeholder">Select an item from the queue to view data.</span>
+          </div>
+        </div>
+        <div class="glossary-panel">
+          <h2>DYNAMIC GLOSSARY</h2>
+          <div id="glossaryContent">
+            <span class="placeholder">Select an item from the queue.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script id="report-data" type="application/json">{{REPORT_DATA_JSON}}</script>
+  <script>
+    const DATA = JSON.parse(document.getElementById('report-data').textContent);
+    let selectedId = DATA.covenants.length > 0 ? DATA.covenants[0].id : null;
+    let summaryOpen = true;
+
+    function formatAgentName(name) {
+      if (!name) return 'Unknown Agent';
+      return name.replace(/([A-Z])/g, ' $1').trim();
+    }
+
+    function renderSummary() {
+      const s = DATA.summary;
+      const meta = s.document_metadata || {};
+      const cost = (s.total_extraction_cost_usd ?? 0).toFixed(4);
+      let html = `
+        <div class="summary-card"><div class="summary-label">Audit Status</div><div class="summary-value">${meta.Audit_Status ?? 'Unknown'}</div></div>
+        <div class="summary-card"><div class="summary-label">Covenants</div><div class="summary-value">${s.covenant_count}</div></div>
+        <div class="summary-card"><div class="summary-label">Validation</div><div class="summary-value"><span class="pass">${s.validation_pass} pass</span> / <span class="fail">${s.validation_fail} fail</span></div></div>
+        <div class="summary-card"><div class="summary-label">Extraction Cost</div><div class="summary-value">$${cost}</div></div>
+      `;
+      if (s.dispatch_envelope_count != null) {
+        html += `<div class="summary-card" style="grid-column: span 2"><div class="summary-label">Dispatch Envelopes</div><div class="summary-value">${s.dispatch_envelope_count}</div></div>`;
+      }
+      const failed = (s.covenants || []).filter(c => !c.is_verified);
+      if (failed.length > 0) {
+        html += `<div class="summary-card summary-failures"><div class="fail" style="font-weight:600;margin-bottom:0.25rem">Failed Validation</div><ul>${failed.map(c => `<li>${formatAgentName(c.agent)} — ${((c.confidence_score ?? 0) * 100).toFixed(0)}% confidence</li>`).join('')}</ul></div>`;
+      }
+      document.getElementById('summaryBody').innerHTML = html;
+      document.getElementById('summaryBody').classList.toggle('hidden', !summaryOpen);
+      document.getElementById('summaryToggleLabel').textContent = summaryOpen ? 'Hide' : 'Show';
+    }
+
+    function auditBadges(audit) {
+      const parts = [];
+      if (audit.false_flag) parts.push('<span class="badge badge-flagged">Flagged</span>');
+      if (!audit.is_verified) parts.push(`<span class="badge badge-audit">Audit ${(audit.confidence * 100).toFixed(0)}%</span>`);
+      if (audit.is_verified) parts.push('<span class="badge badge-verified">Verified</span>');
+      return parts.join('');
+    }
+
+    function renderQueue() {
+      document.getElementById('queueMeta').textContent = `${DATA.covenants.length} Unique Covenants`;
+      const list = document.getElementById('queueList');
+      list.innerHTML = DATA.covenants.map(cov => `
+        <button type="button" class="queue-item ${cov.id === selectedId ? 'active' : ''}" data-id="${cov.id}">
+          <div class="queue-item-title">
+            <span>${cov.agent_display}</span>
+            <span>${auditBadges(cov.audit)}</span>
+          </div>
+          <div class="queue-item-meta">
+            ${cov.page_receipt ? `<div>${cov.page_receipt}</div>` : ''}
+            ${cov.section_receipt ? `<div class="section">${cov.section_receipt}</div>` : ''}
+          </div>
+        </button>
+      `).join('');
+      list.querySelectorAll('.queue-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedId = Number(btn.dataset.id);
+          renderQueue();
+          renderDetail();
+        });
+      });
+    }
+
+    function renderDetail() {
+      const cov = DATA.covenants.find(c => c.id === selectedId);
+      const pdfScroll = document.getElementById('pdfScroll');
+      const pageBadge = document.getElementById('pageBadge');
+      const auditScroll = document.getElementById('auditScroll');
+      const glossaryContent = document.getElementById('glossaryContent');
+
+      if (!cov) {
+        pdfScroll.innerHTML = '<span class="placeholder">Select an item from the queue to view source pages.</span>';
+        pageBadge.classList.add('hidden');
+        auditScroll.innerHTML = '<span class="placeholder">Select an item from the queue to view data.</span>';
+        glossaryContent.innerHTML = '<span class="placeholder">Select an item from the queue.</span>';
+        return;
+      }
+
+      const pages = cov.page_numbers || [];
+      const start = pages[0] ?? 1;
+      const end = pages.length > 1 ? pages[pages.length - 1] : start;
+      pageBadge.textContent = `Pages ${start}${pages.length > 1 ? ' - ' + end : ''} of ${DATA.pdf_page_count || '?'}`;
+      pageBadge.classList.remove('hidden');
+
+      if (cov.page_images && cov.page_images.length > 0) {
+        pdfScroll.innerHTML = cov.page_images.map(src => `<img src="${src}" alt="PDF page" loading="lazy" />`).join('');
+      } else {
+        pdfScroll.innerHTML = '<span class="placeholder">No PDF pages available for this covenant.</span>';
+      }
+
+      const audit = cov.audit;
+      let auditHtml = `
+        <div class="audit-card">
+          <div class="audit-row">
+            <span class="audit-label">Validation Confidence</span>
+            <span style="font-weight:700;color:${audit.confidence < 1 ? '#facc15' : '#4ade80'}">${(audit.confidence * 100).toFixed(0)}%</span>
+          </div>
+          <div class="audit-note">Verified: ${audit.is_verified ? 'Yes' : 'No'}</div>
+      `;
+      if (audit.false_flag && audit.false_flag_reason) {
+        auditHtml += `<div class="audit-error"><strong>False Flag:</strong> ${audit.false_flag_reason}</div>`;
+      }
+      if (audit.discrepancies && audit.discrepancies.length > 0) {
+        auditHtml += `<div class="audit-warning"><strong>Audit Flags:</strong><ul>${audit.discrepancies.map(d => `<li>${d}</li>`).join('')}</ul></div>`;
+      }
+      auditHtml += `</div>${cov.extracted_data_html}`;
+      auditScroll.innerHTML = auditHtml;
+
+      if (!cov.glossary_terms || cov.glossary_terms.length === 0) {
+        glossaryContent.innerHTML = '<span class="placeholder">No legal terms detected in this covenant.</span>';
+        return;
+      }
+
+      const options = cov.glossary_terms.map(t => `<option value="${t}">${t}</option>`).join('');
+      glossaryContent.innerHTML = `
+        <select class="glossary-select" id="glossarySelect">${options}</select>
+        <div class="glossary-text" id="glossaryText"></div>
+      `;
+      const select = document.getElementById('glossarySelect');
+      const updateGlossary = () => {
+        const term = select.value;
+        const def = DATA.glossary[term];
+        document.getElementById('glossaryText').textContent = def
+          ? def.raw_definition_text
+          : 'Definition not found in Phase 2 payload.';
+      };
+      select.addEventListener('change', updateGlossary);
+      updateGlossary();
+    }
+
+    document.getElementById('summaryToggle').addEventListener('click', () => {
+      summaryOpen = !summaryOpen;
+      renderSummary();
+    });
+
+    renderSummary();
+    renderQueue();
+    renderDetail();
+  </script>
+</body>
+</html>
