@@ -1,0 +1,58 @@
+{
+  "routing_rules": [
+    {
+      "target_name": "TotalLeverageRatio",
+      "description": "Maximum consolidated leverage ratio covenant and any step-down schedules.",
+      "valid_zones": ["NEGATIVE COVENANTS", "FINANCIAL COVENANTS"],
+      "section_title_triggers": ["Total Leverage Ratio", "Consolidated Leverage", "Leverage Ratio"]
+    },
+    {
+      "target_name": "FixedChargeCoverageRatio",
+      "description": "Minimum fixed charge coverage ratio and step-up schedules.",
+      "valid_zones": ["NEGATIVE COVENANTS", "FINANCIAL COVENANTS"],
+      "section_title_triggers": ["Fixed Charge Coverage", "Fixed Charge Coverage Ratio"]
+    },
+    {
+      "target_name": "CapitalExpenditures",
+      "description": "Annual capital expenditure limits and carry-forward provisions.",
+      "valid_zones": ["NEGATIVE COVENANTS", "FINANCIAL COVENANTS"],
+      "section_title_triggers": ["Capital Expenditures", "Capital Expenditure"]
+    },
+    {
+      "target_name": "RestrictedPayments",
+      "description": "Dividend and restricted payment baskets and conditional triggers.",
+      "valid_zones": ["NEGATIVE COVENANTS"],
+      "section_title_triggers": ["Restricted Payments", "Restricted Payment"]
+    },
+    {
+      "target_name": "InvestmentsAndAcquisitions",
+      "description": "Investment and acquisition baskets and sub-limits.",
+      "valid_zones": ["NEGATIVE COVENANTS"],
+      "section_title_triggers": ["Investments", "Acquisitions", "Investments and Acquisitions"]
+    },
+    {
+      "target_name": "DebtIncurrence",
+      "description": "Permitted indebtedness baskets and sub-limits.",
+      "valid_zones": ["NEGATIVE COVENANTS", "FINANCIAL COVENANTS"],
+      "section_title_triggers": ["^Debt$", "Indebtedness", "Debt Incurrence"]
+    },
+    {
+      "target_name": "ReportingRequirements",
+      "description": "Financial reporting delivery deadlines.",
+      "valid_zones": ["AFFIRMATIVE COVENANTS", "REPORTING"],
+      "section_title_triggers": ["Reporting", "Financial Statements", "Reports"]
+    },
+    {
+      "target_name": "LimitationOnLiens",
+      "description": "Restrictions on liens and permitted lien exceptions.",
+      "valid_zones": ["NEGATIVE COVENANTS"],
+      "section_title_triggers": ["Liens", "Limitation on Liens"]
+    },
+    {
+      "target_name": "MergersAndConsolidations",
+      "description": "Restrictions on mergers, consolidations, and liquidations.",
+      "valid_zones": ["NEGATIVE COVENANTS"],
+      "section_title_triggers": ["Merger", "Consolidation", "Mergers and Consolidations"]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "covenant-pipeline"
+version = "0.1.0"
+description = "Credit agreement covenant extraction pipeline"
+requires-python = ">=3.10"
+dependencies = [
+    "pymupdf>=1.24",
+    "pandas>=2.0",
+    "google-genai>=1.0",
+    "pydantic>=2.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+viewer = ["fastapi>=0.110", "uvicorn>=0.27"]
+
+[project.scripts]
+covenant-pipeline = "covenant_pipeline.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["covenant_pipeline*"]
