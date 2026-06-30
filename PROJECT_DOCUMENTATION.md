@@ -329,6 +329,8 @@ config/
 
 **Infrastructure (Docker):** See [Docker_Documentation.md](Docker_Documentation.md) for container images, Compose orchestration, and volume/env contracts.
 
+**Learning walkthrough:** See [Reading the Pipeline Code.md](docs/platform-engineering/learning/Reading%20the%20Pipeline%20Code.md) for a line-by-line code walkthrough of `covenant_pipeline/` in the same style as [Reading the Docker Code.md](docs/platform-engineering/learning/Reading%20the%20Docker%20Code.md).
+
 ## **PDF Chunker Guide**
 
 ### **Deterministic Bounding Box Pipeline: EDGAR PDF Extraction**
